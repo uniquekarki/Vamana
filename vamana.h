@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <unordered_set>
+#include <random>
 
 using namespace std;
 
@@ -74,6 +75,12 @@ pair<vector<int>, unordered_set<int>> greedy_search(
     // Initialization
     vector<int> L = {get_index(P, s)};
     unordered_set<int> V;
+    int xq_idx = get_index(P, xq);
+
+    // Ensure xq is not in the initial list
+    if (L[0] == xq_idx) {
+        L.clear(); // Clear L if it mistakenly starts with xq
+    };
 
     float mindist = numeric_limits<float>::max();
     int minNode;
@@ -81,7 +88,7 @@ pair<vector<int>, unordered_set<int>> greedy_search(
     while(true){
         bool has_unvisited = false;
         for (const auto &elem: L){
-            if(V.find(elem) == V.end()){
+            if(V.find(elem) == V.end() && elem != xq_idx){  // Skip xq in unvisited check
                 has_unvisited = true;
 
                 break; // Looped over all elements in L. If any elem is not in V the loop is broken to tell that at least one elem is unvisited
@@ -98,8 +105,8 @@ pair<vector<int>, unordered_set<int>> greedy_search(
 
         // Gets the min distance element from L \ V and sets it as p*
         for(const auto &elem: L){
-            if(V.find(elem) == V.end()){
-                float distance = euclideanDistance(P[elem],xq);
+            if(V.find(elem) == V.end() && elem != xq_idx){  // Skip xq in min distance search
+                float distance = euclideanDistance(P[elem], xq);
                 if(distance < mindist){
                     mindist = distance;
                     p_star = elem;
@@ -108,7 +115,7 @@ pair<vector<int>, unordered_set<int>> greedy_search(
         };
 
         for(const auto &out: G[p_star]){
-            if(V.find(out) == V.end() && find(L.begin(), L.end(), out) == L.end()){
+            if(V.find(out) == V.end() && find(L.begin(), L.end(), out) == L.end() && out != xq_idx){  // Skip xq in neighbors
                 L.push_back(out);
             };
         };
@@ -132,13 +139,13 @@ pair<vector<int>, unordered_set<int>> greedy_search(
 
 vector<vector<int>> robust_prune(
     const int p,
+    unordered_set<int> V,
     const float alpha,
     const int R,
     const vector<vector<float>> &P,
     vector<vector<int>> &G
 ){
     vector<int> N_out_p;
-    vector<int> V = G[p];
 
     if (V.empty()) {
         // If V is empty, just return the current state of G
@@ -167,7 +174,7 @@ vector<vector<int>> robust_prune(
         float dist_p_star = euclideanDistance(P[p_star], P[elem]);
         float dist_p = euclideanDistance(P[p], P[elem]);
 
-        if (alpha * dist_p_star >= dist_p) {
+        if (alpha * dist_p_star >= dist_p && find(N_out_p.begin(), N_out_p.end(), elem) == N_out_p.end()) {
             N_out_p.push_back(elem);
             if (N_out_p.size() == R) {
                 break;
@@ -178,4 +185,90 @@ vector<vector<int>> robust_prune(
     G[p] = N_out_p;
     return G;
 
+};
+
+void saveAdjacencyListToFile(const vector<vector<int>>& G, const string& filename) {
+    ofstream file(filename);
+
+    if (!file.is_open()) {
+        cerr << "Error opening file!" << endl;
+        return;
+    }
+
+    for (int i = 0; i < G.size(); ++i) {
+        file << i << ": ";
+        for (int j = 0; j < G[i].size(); ++j) {
+            file << G[i][j];
+            if (j < G[i].size() - 1) {
+                file << " ";
+            }
+        }
+        file << "\n";
+    }
+
+    file.close();
+    cout << "Adjacency list saved to " << filename << endl;
+}
+
+vector<vector<int>> vamana(
+    const vector<vector<float>> &P,
+    const int R,
+    const int L_size,
+    const float alpha
+){
+    vector<vector<int>> G = create_graph(P, 5);
+    saveAdjacencyListToFile(G, "data/initial_adjacency_list.txt");
+    vector<float> s = calc_medoid(P);
+
+
+    vector<int> perm_list; 
+    for(int i = 0; i < P.size(); i++){
+        perm_list.push_back(i);
+    };
+
+    // Shuffle the nodes
+    random_device rd; 
+    mt19937 g(rd());     
+    shuffle(perm_list.begin(), perm_list.end(), g);
+
+    for(int i: perm_list){
+        vector<float> xq = P[i];
+
+        if (xq == s){
+            continue;
+        };
+
+        // Greedy search from medoid to p[i]
+        pair<vector<int>, unordered_set<int>> result = greedy_search(P, G, s, xq, 1, L_size);
+
+        // Extract the nearest k elements and the set of visited nodes from the result
+        int nearest_neighbor = result.first[0];
+        unordered_set<int> visited_nodes = result.second;
+
+        G = robust_prune(i, visited_nodes, alpha, R, P, G);
+
+        vector<int> i_edge;
+        for (const int x: G[i]){
+            i_edge.push_back(x);
+        };
+
+        for (const int j: i_edge){
+            
+
+            if ((G[j].size() + 1) > R){
+                unordered_set<int> visited_nodes_j;
+                for (const auto &elem: G[j]){
+                    visited_nodes_j.insert(elem);
+                };
+                visited_nodes_j.insert(i);
+                G = robust_prune(j, visited_nodes_j, alpha, R, P, G);
+            }
+            else if (find(G[j].begin(), G[j].end(), i) == G[j].end()) {
+                G[j].push_back(i);
+            };
+        };
+
+    };
+
+    return G;
 };
