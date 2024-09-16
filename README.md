@@ -1,6 +1,6 @@
 # Vamana Algorithm Implementation
 
-This repository provides an implementation of the **Vamana Algorithm**, a proximity graph-based approach for fast and scalable nearest neighbor search in high-dimensional spaces. The Vamana algorithm is designed for fast search and large-scale graph building, and is detailed in the paper **"DiskANN: Fast Accurate Billion-point Nearest Neighbor Search on a Single Node"** by the **Microsoft Research team**, led by **Yashar D. Mehdad** and **Manoj K. Sharma**.
+This repository provides an implementation of the **Vamana Algorithm**, a proximity graph-based approach for fast and scalable nearest neighbor search in high-dimensional spaces. The Vamana algorithm is designed for fast search and large-scale graph building, and is detailed in the paper **"DiskANN: Fast Accurate Billion-point Nearest Neighbor Search on a Single Node"** by the **Microsoft Research team**, led by **Suhas Jayaram Subramanya** and team.
 
 The Vamana algorithm is particularly efficient for approximate nearest neighbor (ANN) searches and has applications in various domains like image retrieval, recommendation systems, and large-scale search tasks.
 
