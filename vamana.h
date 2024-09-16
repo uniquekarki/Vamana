@@ -187,6 +187,29 @@ vector<vector<int>> robust_prune(
 
 };
 
+void saveAdjacencyListToFile(const vector<vector<int>>& G, const string& filename) {
+    ofstream file(filename);
+
+    if (!file.is_open()) {
+        cerr << "Error opening file!" << endl;
+        return;
+    }
+
+    for (int i = 0; i < G.size(); ++i) {
+        file << i << ": ";
+        for (int j = 0; j < G[i].size(); ++j) {
+            file << G[i][j];
+            if (j < G[i].size() - 1) {
+                file << " ";
+            }
+        }
+        file << "\n";
+    }
+
+    file.close();
+    cout << "Adjacency list saved to " << filename << endl;
+}
+
 vector<vector<int>> vamana(
     const vector<vector<float>> &P,
     const int R,
@@ -194,13 +217,7 @@ vector<vector<int>> vamana(
     const float alpha
 ){
     vector<vector<int>> G = create_graph(P, 5);
-    cout << "Initial Graph: \n";
-    for (const auto &row: G){
-        for (const auto &elem: row){
-            cout << elem << " ";
-        };
-        cout << endl;
-    };
+    saveAdjacencyListToFile(G, "data/initial_adjacency_list.txt");
     vector<float> s = calc_medoid(P);
 
 

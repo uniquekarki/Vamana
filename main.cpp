@@ -24,18 +24,8 @@ vector<vector<float>> getData(const string& filename){
     return data;
 };
 
-void printData(const vector<vector<float>>& data){
-    cout << "DATA:" << endl;
-    for (const auto& row: data){
-        for (const auto& val: row){
-            cout << val << " "; 
-        };
-        cout << endl;
-    };
-};
-
 int main(){
-    const string filename = "data.txt";
+    const string filename = "data/data.txt";
     vector<vector<float>> data = getData(filename);
 
     float alpha = 1.2; // Example distance threshold
@@ -43,14 +33,7 @@ int main(){
     int L_size = 3;
     vector<vector<int>> G = vamana(data, R, L_size, alpha);
 
-    cout << "Final Graph After Vamana:\n";
-    for (const auto &row: G){
-        for (const auto &elem: row){
-            cout << elem << " ";
-        };
-        cout << endl;
-    };
+    saveAdjacencyListToFile(G, "data/final_adjacency_list.txt");
 
-    cout << "You are going to University of California, Riverside Mr. Unique Karki but soon Dr. Unique Karki\n";
     return 0;
 }
