@@ -30,7 +30,7 @@ int main(){
 
     float alpha = 1.2; // Example distance threshold
     int R = 2; // Maximum number of out-neighbors for the node
-    int L_size = 3;
+    int L_size = 3; // Max number of search list
     vector<vector<int>> G = vamana(data, R, L_size, alpha);
 
     saveAdjacencyListToFile(G, "data/final_adjacency_list.txt");
