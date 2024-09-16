@@ -70,14 +70,13 @@ pair<vector<int>, unordered_set<int>> greedy_search(
     vector<float> &s, // Start point (we use medoid mostly but can be other points)
     vector<float> &xq, // Query point
     int k, // Number of nearest neighbors to return
-    int L_size // Size of the search list
+    int L_size // Max number of search list
 ){
     // Initialization
     vector<int> L = {get_index(P, s)};
     unordered_set<int> V;
     int xq_idx = get_index(P, xq);
 
-    // Ensure xq is not in the initial list
     if (L[0] == xq_idx) {
         L.clear(); // Clear L if it mistakenly starts with xq
     };
@@ -138,12 +137,12 @@ pair<vector<int>, unordered_set<int>> greedy_search(
 };
 
 vector<vector<int>> robust_prune(
-    const int p,
-    unordered_set<int> V,
-    const float alpha,
-    const int R,
-    const vector<vector<float>> &P,
-    vector<vector<int>> &G
+    const int p, // Point of reference
+    unordered_set<int> V, // Search list
+    const float alpha, // Distance threshold
+    const int R, // Maximum number of out-neighbors for the node
+    const vector<vector<float>> &P,  // Dataset of points
+    vector<vector<int>> &G // Adjacency list
 ){
     vector<int> N_out_p;
 
@@ -211,10 +210,10 @@ void saveAdjacencyListToFile(const vector<vector<int>>& G, const string& filenam
 }
 
 vector<vector<int>> vamana(
-    const vector<vector<float>> &P,
-    const int R,
-    const int L_size,
-    const float alpha
+    const vector<vector<float>> &P, // Dataset of points
+    const int R, // Maximum number of out-neighbors for the node
+    const int L_size, // Max number of search list
+    const float alpha // Distance threshold
 ){
     vector<vector<int>> G = create_graph(P, 5);
     saveAdjacencyListToFile(G, "data/initial_adjacency_list.txt");
